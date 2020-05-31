@@ -1,2 +1,2 @@
 # Squish.py
-A HTML compressor utility
+A web app compressor utility
