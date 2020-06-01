@@ -1,8 +1,10 @@
+import os
 import sys
 import re
 import pathlib
 
 from os import path
+from subprocess import call
 
 
 class Document:
@@ -16,6 +18,8 @@ class Document:
         with open(source, 'r') as file:
             self.__source = self.__remove_readability(file.read())
 
+            file.close()
+
     def process(self, target):
         """ Process a document
 
@@ -28,6 +32,56 @@ class Document:
 
         with open(target, 'w') as file:
             file.write(self.__source)
+            file.close()
+
+    @staticmethod
+    def __compress_style(contents):
+        """ Compress CSS contents
+
+        :return: The compressed CSS
+        """
+
+        return contents
+
+    @staticmethod
+    def __compress_javascript(contents):
+        """ Compress Javascript contents
+
+        :return: The compressed Javascript
+        """
+
+        with open('tmp-in', 'w') as file:
+            file.write(contents)
+            file.close()
+
+        call('npx google-closure-compiler --js=tmp-in --js_output_file=tmp-out', shell=True)
+
+        os.remove('tmp-in')
+
+        with open('tmp-out', 'r') as file:
+            contents = file.read()
+
+            file.close()
+
+        os.remove('tmp-out')
+
+        return contents
+
+    @staticmethod
+    def __compress(contents, tag):
+        """ Compress source code
+
+        :param contents: A string that will be compressed
+        :param tag: The tag in which the code will be placed, determining its type
+        :return: The compressed contents
+        """
+
+        if tag == 'script':
+            return Document.__compress_javascript(contents)
+        elif tag == 'style':
+            return Document.__compress_style(contents)
+
+        return contents
 
     @staticmethod
     def __make_tag(tag, contents):
@@ -126,8 +180,10 @@ class Document:
             if source is None:
                 return match[0]
 
-            with open(self.__root + '\\' + source, 'r') as js:
-                source_contents = js.read()
+            with open(self.__root + '\\' + source, 'r') as file:
+                source_contents = file.read()
+
+                file.close()
 
             if last_match[tag] is not None:
                 if last_match[tag].span()[1] == match.span()[0]:
@@ -137,14 +193,14 @@ class Document:
                     script_contents = combined[tag]
                     combined[tag] = source_contents
 
-                    return self.__make_tag(include_tag[tag], script_contents)
+                    return self.__make_tag(include_tag[tag], self.__compress(script_contents, include_tag[tag]))
             else:
                 combined[tag] = source_contents
 
             last_match[tag] = match
 
             if match.span()[0] == last_index[tag]:
-                return self.__make_tag(include_tag[tag], combined[tag])
+                return self.__make_tag(include_tag[tag], self.__compress(combined[tag], include_tag[tag]))
 
             return ''
 
