@@ -41,6 +41,19 @@ class Document:
         :return: The compressed CSS
         """
 
+        with open('tmp-in', 'w') as file:
+            file.write(contents)
+            file.close()
+
+        call('npx cleancss -o tmp-out tmp-in', shell=True)
+        os.remove('tmp-in')
+
+        with open('tmp-out', 'r') as file:
+            contents = file.read()
+            file.close()
+
+        os.remove('tmp-out')
+
         return contents
 
     @staticmethod
@@ -55,7 +68,6 @@ class Document:
             file.close()
 
         call('npx google-closure-compiler --flagfile=cc.txt --js=tmp-in --js_output_file=tmp-out', shell=True)
-
         os.remove('tmp-in')
 
         with open('tmp-out', 'r') as file:
