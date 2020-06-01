@@ -12,6 +12,7 @@ class Document:
 
     :param source: The source HTML file
     """
+
     def __init__(self, source):
         self.__root = str(pathlib.Path(source).parent.absolute())
 
@@ -35,9 +36,30 @@ class Document:
             file.close()
 
     @staticmethod
+    def __compress_glsl(contents):
+        """ Compress GLSL contents
+
+        :param contents: A string containing GLSL
+        :return: The compressed contents
+        """
+
+        # Remove newlines
+        contents = re.sub(re.compile(r'(?<!#version 100)\\n'), ' ', contents)
+
+        # Remove tabs and spaces
+        contents = re.sub(re.compile(r'(?<!\s)((?<=[\W])\s+|\s+(?=[\W]))'), '', contents)
+
+        # Use short float notation
+        contents = re.sub(re.compile(r'(?<=[^\d.])0(?=\.)'), '', contents)
+        contents = re.sub(re.compile(r'(?<=\d\.)0(?=\D)'), '', contents)
+
+        return contents
+
+    @staticmethod
     def __compress_style(contents):
         """ Compress CSS contents
 
+        :param contents: A string containing CSS
         :return: The compressed CSS
         """
 
@@ -60,6 +82,7 @@ class Document:
     def __compress_javascript(contents):
         """ Compress Javascript contents
 
+        :param contents: A string containing Javascript
         :return: The compressed Javascript
         """
 
@@ -71,13 +94,13 @@ class Document:
         os.remove('tmp-in')
 
         with open('tmp-out', 'r') as file:
-            contents = file.read()
+            contents = file.read().replace('\n', '')
 
             file.close()
 
         os.remove('tmp-out')
 
-        return contents.replace('\n', '')
+        return re.sub('(?!"")#version 100[^"]*(?=")', lambda match: Document.__compress_glsl(match[0]), contents)
 
     @staticmethod
     def __compress(contents, tag):
