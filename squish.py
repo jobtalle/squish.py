@@ -54,7 +54,7 @@ class Document:
             file.write(contents)
             file.close()
 
-        call('npx google-closure-compiler --js=tmp-in --js_output_file=tmp-out', shell=True)
+        call('npx google-closure-compiler --flagfile=cc.txt --js=tmp-in --js_output_file=tmp-out', shell=True)
 
         os.remove('tmp-in')
 
@@ -65,7 +65,7 @@ class Document:
 
         os.remove('tmp-out')
 
-        return contents
+        return contents.replace('\n', '')
 
     @staticmethod
     def __compress(contents, tag):

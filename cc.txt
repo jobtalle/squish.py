@@ -1,0 +1,2 @@
+--compilation_level=ADVANCED_OPTIMIZATIONS
+--language_out=ECMASCRIPT5
