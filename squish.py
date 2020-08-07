@@ -6,6 +6,8 @@ import pathlib
 from os import path
 from subprocess import call
 
+from shortNames import ShortNames
+
 
 class Document:
     """ A document to compress
@@ -152,6 +154,15 @@ class Document:
         return re.compile(attribute + '="([^"]*)"')
 
     @staticmethod
+    def __shorten_css_variables(source):
+        """ Shorten all CSS variable names (starting with --)
+
+        :param source: The source string
+        :return: The source with shortened CSS variable names
+        """
+        pass
+
+    @staticmethod
     def __remove_readability(source):
         """ Remove all nonfunctional readability symbols from a string
 
@@ -243,6 +254,8 @@ class Document:
 
 
 if __name__ == "__main__":
+    names = ShortNames()
+
     args = dict(zip(['call', 'source', 'target'], sys.argv))
 
     if 'source' not in args or not path.exists(args['source']):
