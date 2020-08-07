@@ -33,31 +33,9 @@ class Document:
             ('script', 'src', 'script'),
             ('link', 'href', 'style')))
 
-        self.__source = Document.__shorten_css_variables(self.__source)
-
         with open(target, 'w') as file:
             file.write(self.__source)
             file.close()
-
-    @staticmethod
-    def __shorten_css_variables(contents):
-        """ Shorten all CSS variables (prefixed by --)
-
-        :return: The shortened source file
-        """
-
-        shortener = ShortNames()
-        replacements = {}
-
-        def found(match):
-            name = match[1]
-
-            if name not in replacements:
-                replacements[name] = '--' + shortener.get_name()
-
-            return match[0].replace(name, replacements[name])
-
-        return re.sub(re.compile(r'[{|;|"](--[a-z|A-Z|-]*)[:|"]'), found, contents)
 
     @staticmethod
     def __compress_glsl(contents):
@@ -80,10 +58,11 @@ class Document:
         return contents
 
     @staticmethod
-    def __compress_style(contents):
+    def __compress_style(contents, css_variables):
         """ Compress CSS contents
 
         :param contents: A string containing CSS
+        :param css_variables: A dictionary containing all found css variables
         :return: The compressed CSS
         """
 
@@ -100,13 +79,20 @@ class Document:
 
         os.remove('tmp-out')
 
-        return contents
+        def found(match):
+            if match[1] not in css_variables:
+                css_variables[match[1]] = '--' + css_variables['namer'].get_name()
+
+            return match[0].replace(match[1], css_variables[match[1]])
+
+        return re.sub(r'[{|;|(](--[a-z|A-Z|-]*)[:|)]', found, contents)
 
     @staticmethod
-    def __compress_javascript(contents):
+    def __compress_javascript(contents, css_variables):
         """ Compress Javascript contents
 
         :param contents: A string containing Javascript
+        :param css_variables: A dictionary containing all found css variables
         :return: The compressed Javascript
         """
 
@@ -124,21 +110,30 @@ class Document:
 
         os.remove('tmp-out')
 
-        return re.sub('(?!"")#version 100[^"]*(?=")', lambda match: Document.__compress_glsl(match[0]), contents)
+        contents = re.sub('(?!"")#version 100[^"]*(?=")', lambda match: Document.__compress_glsl(match[0]), contents)
+
+        def found(match):
+            if match[1] in css_variables:
+                return match[0].replace(match[1], css_variables[match[1]])
+
+            return match[0]
+
+        return re.sub(r'"(--[a-z|A-Z|-]*)"', found, contents)
 
     @staticmethod
-    def __compress(contents, tag):
+    def __compress(contents, tag, css_variables):
         """ Compress source code
 
         :param contents: A string that will be compressed
         :param tag: The tag in which the code will be placed, determining its type
+        :param css_variables: An object containing all CSS variables
         :return: The compressed contents
         """
 
         if tag == 'script':
-            return Document.__compress_javascript(contents)
+            return Document.__compress_javascript(contents, css_variables)
         elif tag == 'style':
-            return Document.__compress_style(contents)
+            return Document.__compress_style(contents, css_variables)
 
         return contents
 
@@ -221,6 +216,8 @@ class Document:
         attribute = {}
         include_tag = {}
 
+        css_variables = {'namer': ShortNames()}
+
         for tag in tags:
             combined[tag[0]] = ''
             last_match[tag[0]] = None
@@ -232,6 +229,7 @@ class Document:
             nonlocal combined
             nonlocal last_match
             nonlocal last_index
+            nonlocal css_variables
 
             tag = match[1]
             source = self.__extract_attribute(match[2], attribute[tag])
@@ -252,18 +250,23 @@ class Document:
                     script_contents = combined[tag]
                     combined[tag] = source_contents
 
-                    return self.__make_tag(include_tag[tag], self.__compress(script_contents, include_tag[tag]))
+                    return self.__make_tag(
+                        include_tag[tag],
+                        self.__compress(script_contents, include_tag[tag], css_variables))
             else:
                 combined[tag] = source_contents
 
             last_match[tag] = match
 
             if match.span()[0] == last_index[tag]:
-                return self.__make_tag(include_tag[tag], self.__compress(combined[tag], include_tag[tag]))
+                return self.__make_tag(
+                    include_tag[tag],
+                    self.__compress(combined[tag], include_tag[tag], css_variables))
 
             return ''
 
         self.__extract_tags([tag[0] for tag in tags], get_match)
+        print(css_variables)
 
 
 if __name__ == "__main__":
