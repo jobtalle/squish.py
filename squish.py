@@ -33,9 +33,31 @@ class Document:
             ('script', 'src', 'script'),
             ('link', 'href', 'style')))
 
+        self.__source = Document.__shorten_css_variables(self.__source)
+
         with open(target, 'w') as file:
             file.write(self.__source)
             file.close()
+
+    @staticmethod
+    def __shorten_css_variables(contents):
+        """ Shorten all CSS variables (prefixed by --)
+
+        :return: The shortened source file
+        """
+
+        shortener = ShortNames()
+        replacements = {}
+
+        def found(match):
+            name = match[1]
+
+            if name not in replacements:
+                replacements[name] = '--' + shortener.get_name()
+
+            return match[0].replace(name, replacements[name])
+
+        return re.sub(re.compile(r'[{|;|"](--[a-z|A-Z|-]*)[:|"]'), found, contents)
 
     @staticmethod
     def __compress_glsl(contents):
@@ -152,15 +174,6 @@ class Document:
         """
 
         return re.compile(attribute + '="([^"]*)"')
-
-    @staticmethod
-    def __shorten_css_variables(source):
-        """ Shorten all CSS variable names (starting with --)
-
-        :param source: The source string
-        :return: The source with shortened CSS variable names
-        """
-        pass
 
     @staticmethod
     def __remove_readability(source):
