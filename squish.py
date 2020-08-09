@@ -266,7 +266,6 @@ class Document:
             return ''
 
         self.__extract_tags([tag[0] for tag in tags], get_match)
-        print(css_variables)
 
 
 if __name__ == "__main__":
