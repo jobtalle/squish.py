@@ -35,4 +35,4 @@ def compress_js(source, css_variables):
 
         return match[0]
 
-    return re.sub(r'"(--[a-z|A-Z|-]*)"', found, contents)
+    return re.sub(r'"(--[a-zA-Z-]*)"', found, contents)

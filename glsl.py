@@ -1,5 +1,7 @@
 import re
 
+from shortNames import ShortNames
+
 
 def __substitute_macros(source):
     """ Substitute macro definitions
@@ -26,10 +28,10 @@ def __substitute_macros(source):
         return match[0]
 
     # Find all macros and their values and delete them
-    source = re.sub(re.compile(r'#define ([A-Z|_]+) ([^\\n]+)'), lambda match: found_definition(match), source)
+    source = re.sub(re.compile(r'#define ([A-Z_]+) ([^\\n]+)'), found_definition, source)
 
     # Inline macros
-    return re.sub(re.compile(r'[^a-zA-Z|_|\d]([A-Z|_][A-Z|_|\d]*)'), lambda match: found_occurrence(match), source)
+    return re.sub(re.compile(r'[^a-zA-Z_\d]([A-Z_][A-Z_\d]*)'), found_occurrence, source)
 
 
 def __strip_readability(source):
@@ -67,9 +69,7 @@ def compress_glsl(source):
     :return: The compressed source
     """
 
-    s = __shorten_floats(
+    return __shorten_floats(
         __strip_readability(
             __substitute_macros(
                 source)))
-    print(s)
-    return s

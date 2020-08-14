@@ -31,4 +31,4 @@ def compress_css(source, css_variables):
 
         return match[0].replace(match[1], css_variables[match[1]])
 
-    return re.sub(r'[{|;|(](--[a-z|A-Z|-]*)[:|)]', found, contents)
+    return re.sub(r'[{;(](--[a-zA-Z-]*)[:)]', found, contents)
