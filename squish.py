@@ -1,11 +1,11 @@
-import os
 import sys
 import re
 import pathlib
 
 from os import path
-from subprocess import call
 
+from css import compress_css
+from js import compress_js
 from shortNames import ShortNames
 
 
@@ -38,91 +38,8 @@ class Document:
             file.close()
 
     @staticmethod
-    def __compress_glsl(contents):
-        """ Compress GLSL contents
-
-        :param contents: A string containing GLSL
-        :return: The compressed contents
-        """
-
-        # Remove newlines
-        contents = re.sub(re.compile(r'(?<!#version 100)\\n'), ' ', contents)
-
-        # Remove tabs and spaces
-        contents = re.sub(re.compile(r'(?<!\s)((?<=[\W])\s+|\s+(?=[\W]))'), '', contents)
-
-        # Use short float notation
-        contents = re.sub(re.compile(r'(?<=[^\d.])0(?=\.)'), '', contents)
-        contents = re.sub(re.compile(r'(?<=\d\.)0(?=\D)'), '', contents)
-
-        return contents
-
-    @staticmethod
-    def __compress_style(contents, css_variables):
-        """ Compress CSS contents
-
-        :param contents: A string containing CSS
-        :param css_variables: A dictionary containing all found css variables
-        :return: The compressed CSS
-        """
-
-        with open('tmp-in', 'w') as file:
-            file.write(contents)
-            file.close()
-
-        call('npx cleancss -o tmp-out tmp-in', shell=True)
-        os.remove('tmp-in')
-
-        with open('tmp-out', 'r') as file:
-            contents = file.read()
-            file.close()
-
-        os.remove('tmp-out')
-
-        def found(match):
-            if match[1] not in css_variables:
-                css_variables[match[1]] = '--' + css_variables['namer'].get_name()
-
-            return match[0].replace(match[1], css_variables[match[1]])
-
-        return re.sub(r'[{|;|(](--[a-z|A-Z|-]*)[:|)]', found, contents)
-
-    @staticmethod
-    def __compress_javascript(contents, css_variables):
-        """ Compress Javascript contents
-
-        :param contents: A string containing Javascript
-        :param css_variables: A dictionary containing all found css variables
-        :return: The compressed Javascript
-        """
-
-        with open('tmp-in', 'w') as file:
-            file.write(contents)
-            file.close()
-
-        call('npx google-closure-compiler --flagfile=cc.txt --js=tmp-in --js_output_file=tmp-out', shell=True)
-        os.remove('tmp-in')
-
-        with open('tmp-out', 'r') as file:
-            contents = file.read().replace('\n', '')
-
-            file.close()
-
-        os.remove('tmp-out')
-
-        contents = re.sub('(?!"")#version 100[^"]*(?=")', lambda match: Document.__compress_glsl(match[0]), contents)
-
-        def found(match):
-            if match[1] in css_variables:
-                return match[0].replace(match[1], css_variables[match[1]])
-
-            return match[0]
-
-        return re.sub(r'"(--[a-z|A-Z|-]*)"', found, contents)
-
-    @staticmethod
     def __compress(contents, tag, css_variables):
-        """ Compress source code
+        """ Compress the contents of an HTML tag, if possible
 
         :param contents: A string that will be compressed
         :param tag: The tag in which the code will be placed, determining its type
@@ -131,9 +48,9 @@ class Document:
         """
 
         if tag == 'script':
-            return Document.__compress_javascript(contents, css_variables)
+            return compress_js(contents, css_variables)
         elif tag == 'style':
-            return Document.__compress_style(contents, css_variables)
+            return compress_css(contents, css_variables)
 
         return contents
 
@@ -172,9 +89,9 @@ class Document:
 
     @staticmethod
     def __remove_readability(source):
-        """ Remove all nonfunctional readability symbols from a string
+        """ Remove all nonfunctional readability symbols from an HTML string
 
-        :return: A compressed string
+        :return: A compressed HTML string
         """
 
         return re.sub(' {2}|\t|\n', '', source)
@@ -205,7 +122,7 @@ class Document:
         self.__source = re.sub(self.__make_regex_tag(tags), match, self.__source)
 
     def __collect(self, tags):
-        """ Include source files referenced by a tag directly
+        """ Include source files referenced by tags directly
 
         :param tags: A tuple of tuples describing the tags and attributes to look for
         """
@@ -269,8 +186,6 @@ class Document:
 
 
 if __name__ == "__main__":
-    names = ShortNames()
-
     args = dict(zip(['call', 'source', 'target'], sys.argv))
 
     if 'source' not in args or not path.exists(args['source']):
