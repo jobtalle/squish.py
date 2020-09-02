@@ -17,7 +17,12 @@ def compress_js(source, css_variables):
         file.write(source)
         file.close()
 
-    call('npx google-closure-compiler --flagfile=cc.txt --js=tmp-in --js_output_file=tmp-out', shell=True)
+    call('npx google-closure-compiler\
+        --compilation_level=ADVANCED_OPTIMIZATIONS\
+        --language_out=ECMASCRIPT5\
+        --warning_level=QUIET\
+        --js=tmp-in\
+        --js_output_file=tmp-out', shell=True)
     os.remove('tmp-in')
 
     with open('tmp-out', 'r') as file:

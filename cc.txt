@@ -1,3 +1,0 @@
---compilation_level=ADVANCED_OPTIMIZATIONS
---language_out=ECMASCRIPT5
---warning_level=QUIET
