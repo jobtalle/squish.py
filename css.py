@@ -4,6 +4,19 @@ import re
 from subprocess import call
 
 
+def __capitalize_hexadecimals(source):
+    """ Capitalize all hexadecimal strings
+
+    :param source: The source CSS string
+    :return: The CSS string with all hexadecimal values capitalized
+    """
+
+    def found(match):
+        return match[0].replace(match[1], match[1].upper())
+
+    return re.sub(r'#([\dabcdefABCDEF]{6}|[\dabcdefABCDEF]{3});', found, source)
+
+
 def compress_css(source, css_variables):
     """ Compress CSS content
 
@@ -31,4 +44,4 @@ def compress_css(source, css_variables):
 
         return match[0].replace(match[1], css_variables[match[1]])
 
-    return re.sub(r'[{;(](--[a-zA-Z-]*)[:)]', found, contents)
+    return __capitalize_hexadecimals(re.sub(r'[{;(](--[a-zA-Z-]*)[:)]', found, contents))

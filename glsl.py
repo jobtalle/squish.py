@@ -1,7 +1,5 @@
 import re
 
-from shortNames import ShortNames
-
 
 def __substitute_macros(source):
     """ Substitute macro definitions
