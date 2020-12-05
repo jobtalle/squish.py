@@ -12,9 +12,31 @@ def __capitalize_hexadecimals(source):
     """
 
     def found(match):
-        return match[0].replace(match[1], match[1].upper())
+        return match[0].replace(match[1], match[1].lower())
 
-    return re.sub(r'#([\dabcdefABCDEF]{6}|[\dabcdefABCDEF]{3});', found, source)
+    return re.sub(r'#([\dabcdefABCDEF]{8}|[\dabcdefABCDEF]{6}|[\dabcdefABCDEF]{3})', found, source)
+
+
+def __group_variables(source):
+    """
+    Group all variables together at the start of the CSS contents
+
+    :param source: The source CSS string
+    :return: The CSS string with all variables grouped at the start of the string
+    """
+
+    variables = ""
+
+    def found(match):
+        nonlocal variables
+
+        variables += match[1]
+
+        return ""
+
+    stripped = re.sub(r':root ?{([^}]*)}', found, source)
+
+    return ":root{" + variables + "}" + stripped
 
 
 def compress_css(source, css_variables):
@@ -26,7 +48,7 @@ def compress_css(source, css_variables):
     """
 
     with open('tmp-in', 'w') as file:
-        file.write(source)
+        file.write(__group_variables(source))
         file.close()
 
     call('npx cleancss -o tmp-out tmp-in', shell=True)
