@@ -19,7 +19,7 @@ def compress_js(source, css_variables):
 
     call('npx google-closure-compiler\
         --compilation_level=ADVANCED_OPTIMIZATIONS\
-        --language_out=ECMASCRIPT5\
+        --language_out=ECMASCRIPT6\
         --warning_level=QUIET\
         --js=tmp-in\
         --js_output_file=tmp-out', shell=True)
