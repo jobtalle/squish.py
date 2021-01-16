@@ -31,7 +31,7 @@ class Document:
 
         self.__collect((
             ('script', 'src', 'script'),
-            ('link', 'href', 'style')))
+            ('link rel="stylesheet"', 'href', 'style')))
 
         with open(target, 'w') as file:
             file.write(self.__source)
