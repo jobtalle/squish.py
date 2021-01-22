@@ -154,7 +154,7 @@ class Document:
             if source is None:
                 return match[0]
 
-            with open(self.__root + '\\' + source, 'r') as file:
+            with open(path.join(self.__root, source), 'r') as file:
                 source_contents = file.read()
 
                 file.close()
