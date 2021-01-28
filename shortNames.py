@@ -7,14 +7,14 @@ class ShortNames:
         :param at: The index in the list to increment
         """
 
-        if at is -1:
+        if at == -1:
             self.__name_list.append('a')
         else:
             char = self.__name_list[at]
 
-            if char is 'z':
+            if char == 'z':
                 self.__name_list[at] = 'A'
-            elif char is 'Z':
+            elif char == 'Z':
                 self.__name_list[at] = 'a'
                 self.__increment(at - 1)
             else:
