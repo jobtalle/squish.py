@@ -48,15 +48,11 @@ def compress_js(directory, source, css_variables, advanced_cc):
         file.write(inline_modules(source, directory))
         file.close()
 
-    # TODO: include all externs in cc folder
-
-    extern_dir = os.path.join(os.path.dirname(__file__), 'cc')
-
     call('npx google-closure-compiler\
         --compilation_level=' + ('ADVANCED_OPTIMIZATIONS' if advanced_cc else 'SIMPLE_OPTIMIZATIONS') + '\
         --language_out=ECMASCRIPT5\
         --warning_level=QUIET\
-        --js=tmp-in ' + os.path.join(extern_dir, 'w3c_audio.js') + '\
+        --js=tmp-in\
         --js_output_file=tmp-out', shell=True)
     os.remove('tmp-in')
 
