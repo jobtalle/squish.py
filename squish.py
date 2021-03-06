@@ -23,32 +23,34 @@ class Document:
 
             file.close()
 
-    def process(self, target):
+    def process(self, target, flags):
         """ Process a document
 
         :param target: The target output HTML file
+        :param flags: A dictionary of flags
         """
 
         self.__collect((
             ('script', 'src', 'script'),
-            ('link rel="stylesheet"', 'href', 'style')))
+            ('link rel="stylesheet"', 'href', 'style')), flags)
 
         with open(target, 'w') as file:
             file.write(self.__source)
             file.close()
 
     @staticmethod
-    def __compress(contents, tag, css_variables):
+    def __compress(contents, tag, css_variables, flags):
         """ Compress the contents of an HTML tag, if possible
 
         :param contents: A string that will be compressed
         :param tag: The tag in which the code will be placed, determining its type
         :param css_variables: An object containing all CSS variables
+        :param flags: A dictionary of flags
         :return: The compressed contents
         """
 
         if tag == 'script':
-            return compress_js(contents, css_variables)
+            return compress_js(contents, css_variables, '--advanced-cc' in flags)
         elif tag == 'style':
             return compress_css(contents, css_variables)
 
@@ -121,10 +123,11 @@ class Document:
 
         self.__source = re.sub(self.__make_regex_tag(tags), match, self.__source)
 
-    def __collect(self, tags):
+    def __collect(self, tags, flags):
         """ Include source files referenced by tags directly
 
         :param tags: A tuple of tuples describing the tags and attributes to look for
+        :param flags: A dictionary of flags
         """
 
         combined = {}
@@ -169,7 +172,7 @@ class Document:
 
                     return self.__make_tag(
                         include_tag[tag],
-                        self.__compress(script_contents, include_tag[tag], css_variables))
+                        self.__compress(script_contents, include_tag[tag], css_variables, flags))
             else:
                 combined[tag] = source_contents
 
@@ -178,7 +181,7 @@ class Document:
             if match.span()[0] == last_index[tag]:
                 return self.__make_tag(
                     include_tag[tag],
-                    self.__compress(combined[tag], include_tag[tag], css_variables))
+                    self.__compress(combined[tag], include_tag[tag], css_variables, flags))
 
             return ''
 
@@ -194,4 +197,4 @@ if __name__ == "__main__":
         if 'target' not in args:
             print('Please provide a valid output target')
         else:
-            Document(args['source']).process(args['target'])
+            Document(args['source']).process(args['target'], sys.argv)

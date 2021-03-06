@@ -5,11 +5,12 @@ from subprocess import call
 from glsl import compress_glsl
 
 
-def compress_js(source, css_variables):
+def compress_js(source, css_variables, advanced_cc):
     """ Compress Javascript content
 
     :param source: The source Javascript string
     :param css_variables: A CSS variables object to shorten css variable names
+    :param advanced_cc: True if advanced optimizations should be used
     :return: The compressed source
     """
 
@@ -18,7 +19,7 @@ def compress_js(source, css_variables):
         file.close()
 
     call('npx google-closure-compiler\
-        --compilation_level=ADVANCED_OPTIMIZATIONS\
+        --compilation_level=' + ('ADVANCED_OPTIMIZATIONS' if advanced_cc else 'SIMPLE_OPTIMIZATIONS') + '\
         --language_out=ECMASCRIPT5\
         --warning_level=QUIET\
         --js=tmp-in\
