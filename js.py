@@ -3,11 +3,46 @@ import re
 
 from subprocess import call
 from glsl import compress_glsl
+from os import path
 
 
+<<<<<<< HEAD
 def compress_js(source, css_variables, advanced_cc):
+=======
+def inline_modules(source, directory, imported = []):
+    """ Inline modules
+
+    :param source: The source Javascript string
+    :param directory: The root directory
+    :param imported: All files inlined so far
+    :return: The source with all modules recursively inlined
+    """
+
+    def include(match):
+        head, tail = path.split(match[1])
+
+        if tail in imported:
+            return ""
+
+        imported.append(tail)
+
+        contents = ""
+
+        with open(path.join(directory, head, tail), 'r') as file:
+            contents = inline_modules(file.read(), path.join(directory, head), imported)
+
+            file.close()
+
+        return contents
+
+    return re.sub('import {.*} from "(.*)";', lambda match: include(match), source.replace("export ", ""))
+
+
+def compress_js(directory, source, css_variables):
+>>>>>>> f4ce6be53ce6b5bf67a3119ad59f358eb81ae186
     """ Compress Javascript content
 
+    :param directory: The root directory
     :param source: The source Javascript string
     :param css_variables: A CSS variables object to shorten css variable names
     :param advanced_cc: True if advanced optimizations should be used
@@ -15,7 +50,7 @@ def compress_js(source, css_variables, advanced_cc):
     """
 
     with open('tmp-in', 'w') as file:
-        file.write(source)
+        file.write(inline_modules(source, directory))
         file.close()
 
     call('npx google-closure-compiler\

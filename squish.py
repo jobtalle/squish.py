@@ -39,9 +39,10 @@ class Document:
             file.close()
 
     @staticmethod
-    def __compress(contents, tag, css_variables, flags):
+    def __compress(directory, contents, tag, css_variables, flags):
         """ Compress the contents of an HTML tag, if possible
 
+        :param directory: The root directory
         :param contents: A string that will be compressed
         :param tag: The tag in which the code will be placed, determining its type
         :param css_variables: An object containing all CSS variables
@@ -50,7 +51,8 @@ class Document:
         """
 
         if tag == 'script':
-            return compress_js(contents, css_variables, '--advanced-cc' in flags)
+            return compress_js(directory, contents, css_variables, '--advanced-cc' in flags)
+
         elif tag == 'style':
             return compress_css(contents, css_variables)
 
@@ -157,6 +159,8 @@ class Document:
             if source is None:
                 return match[0]
 
+            directory = path.split(path.join(self.__root, source))[0]
+
             with open(path.join(self.__root, source), 'r') as file:
                 source_contents = file.read()
 
@@ -172,7 +176,7 @@ class Document:
 
                     return self.__make_tag(
                         include_tag[tag],
-                        self.__compress(script_contents, include_tag[tag], css_variables, flags))
+                        self.__compress(directory, script_contents, include_tag[tag], css_variables, flags))
             else:
                 combined[tag] = source_contents
 
@@ -181,7 +185,8 @@ class Document:
             if match.span()[0] == last_index[tag]:
                 return self.__make_tag(
                     include_tag[tag],
-                    self.__compress(combined[tag], include_tag[tag], css_variables, flags))
+
+                    self.__compress(directory, combined[tag], include_tag[tag], css_variables, flags))
 
             return ''
 
