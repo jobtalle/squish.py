@@ -5,10 +5,6 @@ from subprocess import call
 from glsl import compress_glsl
 from os import path
 
-
-<<<<<<< HEAD
-def compress_js(source, css_variables, advanced_cc):
-=======
 def inline_modules(source, directory, imported = []):
     """ Inline modules
 
@@ -38,8 +34,7 @@ def inline_modules(source, directory, imported = []):
     return re.sub('import {.*} from "(.*)";', lambda match: include(match), source.replace("export ", ""))
 
 
-def compress_js(directory, source, css_variables):
->>>>>>> f4ce6be53ce6b5bf67a3119ad59f358eb81ae186
+def compress_js(directory, source, css_variables, advanced_cc):
     """ Compress Javascript content
 
     :param directory: The root directory
