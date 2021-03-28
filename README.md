@@ -19,4 +19,5 @@ Source is the source HTML file containing references to included CSS and JS, tar
 ## Flags
 
 | Flag | Usage |
+| --- | --- |
 | --advanced-cc | Use [advanced closure compiler optimizations](https://developers.google.com/closure/compiler/docs/compilation_levels) |
