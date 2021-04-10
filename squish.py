@@ -18,7 +18,7 @@ class Document:
     def __init__(self, source):
         self.__root = str(pathlib.Path(source).parent.absolute())
 
-        with open(source, 'r') as file:
+        with open(source, 'r', encoding="utf8") as file:
             self.__source = self.__remove_readability(file.read())
 
             file.close()
@@ -34,7 +34,7 @@ class Document:
             ('script', 'src', 'script'),
             ('link rel="stylesheet"', 'href', 'style')), flags)
 
-        with open(target, 'w') as file:
+        with open(target, 'w', encoding="utf8") as file:
             file.write(self.__source)
             file.close()
 
@@ -161,7 +161,7 @@ class Document:
 
             directory = path.split(path.join(self.__root, source))[0]
 
-            with open(path.join(self.__root, source), 'r') as file:
+            with open(path.join(self.__root, source), 'r', encoding="utf8") as file:
                 source_contents = file.read()
 
                 file.close()
