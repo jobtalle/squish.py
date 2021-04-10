@@ -24,7 +24,7 @@ def inline_modules(source, directory, imported = []):
 
         contents = ""
 
-        with open(path.join(directory, head, tail), 'r') as file:
+        with open(path.join(directory, head, tail), 'r', encoding="utf8") as file:
             contents = inline_modules(file.read(), path.join(directory, head), imported)
 
             file.close()
@@ -44,7 +44,7 @@ def compress_js(directory, source, css_variables, advanced_cc):
     :return: The compressed source
     """
 
-    with open('tmp-in', 'w') as file:
+    with open('tmp-in', 'w', encoding="utf8") as file:
         file.write(inline_modules(source, directory))
         file.close()
 
@@ -56,7 +56,7 @@ def compress_js(directory, source, css_variables, advanced_cc):
         --js_output_file=tmp-out', shell=True)
     os.remove('tmp-in')
 
-    with open('tmp-out', 'r') as file:
+    with open('tmp-out', 'r', encoding="utf8") as file:
         contents = file.read().replace('\n', '')
 
         file.close()
