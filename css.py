@@ -60,10 +60,4 @@ def compress_css(source, css_variables):
 
     os.remove('tmp-out')
 
-    def found(match):
-        if match[1] not in css_variables:
-            css_variables[match[1]] = '--' + css_variables['namer'].get_name()
-
-        return match[0].replace(match[1], css_variables[match[1]])
-
-    return __capitalize_hexadecimals(re.sub(r'[{;(](--[a-zA-Z-]*)[:)]', found, contents))
+    return __capitalize_hexadecimals(contents)
